@@ -1,5 +1,9 @@
 # Kandroid
 
-## Innit commit: Spec complite.
+## Innit commit: Spec complite
 
     Написана спецификация, созданы типовые файлы.
+
+## Fix: Spec reworked
+
+    Уточнил платформу проекта, и дополнил связанными с платформой спецификациями
