@@ -4,3 +4,19 @@
  * This is a general purpose Gradle build.
  * Learn how to create Gradle builds at https://guides.gradle.org/creating-new-gradle-builds/
  */
+plugins {
+    application
+    kotlin("jvm") version "1.3.40"
+}
+
+application {
+    mainClassName = "org.kandroid.kandroidKt"
+}
+
+dependencies {
+    compile(kotlin("stdlib"))
+}
+
+repositories {
+    jcenter()
+}
