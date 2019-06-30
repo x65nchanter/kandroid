@@ -7,4 +7,9 @@
  * in the user manual at https://docs.gradle.org/5.4.1/userguide/multi_project_builds.html
  */
 
+pluginManagement {
+	repositories {
+		gradlePluginPortal()
+	}
+}
 rootProject.name = "kandroid"
