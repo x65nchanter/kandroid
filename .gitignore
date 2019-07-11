@@ -6,4 +6,7 @@
 build
 
 # Спрятал наброски от гита
-scratch 
+scratch
+
+# Vagrant файлы не влеяющие на коробку
+.vagrant
