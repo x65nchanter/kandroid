@@ -18,18 +18,19 @@ class BoardController(val boardService: BoardService) {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     fun create(@RequestBody board: Board): Board {
+        //TODO: Логирование действия создания доски
         val result = boardService.add(board)
         logger.debug(result.toString())
         return result
     }
 
-//    @GetMapping("{id}")
-//    @ResponseStatus(HttpStatus.FOUND)
-//    fun read(@PathVariable id: Long) = boardService.get(id)
-//
-//    @PutMapping("{id}")
-//    fun update(@PathVariable id: Long, @RequestBody board: Board) = boardService.edit(id, board)
-//
-//    @DeleteMapping("{id}")
-//    fun delete(@PathVariable id: Long) = boardService.remove(id)
+    @GetMapping("{id}")
+    @ResponseStatus(HttpStatus.FOUND)
+    fun read(@PathVariable id: Long) = boardService.get(id)
+
+    @PutMapping("{id}")
+    fun update(@PathVariable id: Long, @RequestBody board: Board) = boardService.edit(id, board)
+
+    @DeleteMapping("{id}")
+    fun delete(@PathVariable id: Long) = boardService.remove(id)
 }

@@ -6,10 +6,16 @@ import org.x65nchanter.kandroid.data.BoardRepository
 
 @Service
 class BoardService(val boardRepository: BoardRepository) {
-    //TODO: Запросы к репозиторию досок
-    fun getAll(): Iterable<Board> = boardRepository.findAll()
-
+    //TODO: CRUD Запросы к репозиторию досок
     fun getById(id: Long) = boardRepository.findById(id)
 
+    fun getAll(): Iterable<Board> = boardRepository.findAll()
+
     fun add(board: Board) = boardRepository.save(board)
+
+    fun edit(id: Long, board: Board) = boardRepository.save(board.copy(id = id))
+
+    fun get(id: Long) = getById(id)
+
+    fun remove(id: Long) = boardRepository.deleteById(id)
 }

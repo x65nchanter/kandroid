@@ -6,8 +6,6 @@ import javax.persistence.*
 
 @Entity
 data class Board(
-
-//         Columns
         @JsonProperty(required = true)
         @Column(length = 256, nullable = false)
         val name: String,
@@ -24,11 +22,20 @@ data class Board(
         @Temporal(TemporalType.TIMESTAMP)
         val endAt: Date?,
 
+        @JsonProperty
+        @Column(nullable = false)
+        val status: Short = BoardStatus.PLANING.statusCode,
+
         @Id
         @JsonProperty
         @GeneratedValue(strategy = GenerationType.AUTO)
         val id: Long = 0L
 ) {
+        enum class BoardStatus(val statusCode: Short) {
+                PLANING(0),
+                ACTIVE(1),
+                FINISHED(2)
+        }
 //        Relationships
 //        val columns
 //        val tasks
