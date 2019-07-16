@@ -13,7 +13,10 @@ import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.RequestBuilder
 import org.springframework.test.web.servlet.ResultActions
 import org.springframework.test.web.servlet.ResultMatcher
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup
@@ -25,9 +28,18 @@ import org.springframework.web.context.WebApplicationContext
 class KandroidApplicationTests {
 
     private val jsonContentType = MediaType(MediaType.APPLICATION_JSON.type, MediaType.APPLICATION_JSON.subtype)
+
     private val baseURL = "http://localhost:8000/"
+
     private val baseURLBoard = baseURL + "board/"
     private val baseURLFirstBoard = baseURLBoard + "1"
+
+    private val baseURLColumn = baseURL + "column/"
+    private val baseURLFirstColumn = baseURLColumn + "2"
+
+    private val baseURLTask = baseURL + "task/"
+    private val baseURLFirstTask = baseURLTask + "3"
+
     private val emptyJsonResponse = "[]"
 
     private lateinit var mockMvc: MockMvc
@@ -40,22 +52,22 @@ class KandroidApplicationTests {
         mockMvc = webAppContextSetup(webAppContext).build()
     }
 
-    private fun makeResponse(request: RequestBuilder, status: ResultMatcher, content: ResultMatcher? = null): ResultActions {
+    private fun makeResponse(request: RequestBuilder, status: ResultMatcher, response: String? = null): ResultActions {
         val actions = mockMvc.perform(request).andExpect(status)
-        if (content != null) {
-            actions.andExpect(content)
+        if (response != null) {
+            actions.andExpect(content().json(response))
         }
         return actions
     }
 
     private fun makeResponseStatusOk(request: RequestBuilder, response: String? = null) =
-            makeResponse(request, status().isOk, if (response != null) content().json(response) else null)
+            makeResponse(request, status().isOk, response)
 
     private fun makeResponseStatusCreated(request: RequestBuilder, response: String? = null) =
-            makeResponse(request, status().isCreated, if (response != null) content().json(response) else null)
+            makeResponse(request, status().isCreated, response)
 
     private fun makeResponseStatusFound(request: RequestBuilder, response: String? = null) =
-            makeResponse(request, status().isFound, if (response != null) content().json(response) else null)
+            makeResponse(request, status().isFound, response)
 
     private fun routineTestGetOne(base: String, resultJsonString: String) {
         val request = get(base).contentType(jsonContentType)
@@ -63,13 +75,13 @@ class KandroidApplicationTests {
         val response = makeResponseStatusFound(request, resultJsonString)
     }
 
-    private fun routineTestRouteGetAll(base: String, result: String) {
+    private fun routineTestGetAll(base: String, result: String) {
         val request = get(base).contentType(jsonContentType)
 
         val response = makeResponseStatusOk(request, result)
     }
 
-    private fun routineTestRouteGetEmpty(base: String) = routineTestRouteGetAll(base, emptyJsonResponse)
+    private fun routineTestGetEmpty(base: String) = routineTestGetAll(base, emptyJsonResponse)
 
     private fun routineTestPostOne(base: String, passedJsonString: String, resultJsonString: String) {
         val request = post(base).contentType(jsonContentType).content(passedJsonString)
@@ -90,7 +102,7 @@ class KandroidApplicationTests {
     }
 
 	@Test
-    fun `01 - Exist board route`() = routineTestRouteGetEmpty(baseURLBoard)
+    fun `01 - Exist board route`() = routineTestGetEmpty(baseURLBoard)
 
     @Test
     fun `02 - Post one board`() {
@@ -168,13 +180,172 @@ class KandroidApplicationTests {
             }]
         """.trimIndent()
 
-        routineTestRouteGetAll(baseURLBoard, resultJsonString)
+        routineTestGetAll(baseURLBoard, resultJsonString)
     }
 
     @Test
-    fun `06 - Delete first board`() {
-        routineTestDeleteOne(baseURLFirstBoard)
+    fun `06 - Delete first board`() = routineTestDeleteOne(baseURLFirstBoard)
+
+    @Test
+    fun `11 - Exist column route`() = routineTestGetEmpty(baseURLColumn)
+
+    @Test
+    fun `12 - Post one column`() {
+        val passedJsonString = """
+            {
+                "name": "testColumn",
+                "order": 1
+            }
+        """.trimIndent()
+
+        val resultJsonString = """
+            {
+                "name": "testColumn",
+                "order": 1,
+                "id": 2
+            }
+        """.trimIndent()
+
+
+        routineTestPostOne(baseURLColumn, passedJsonString, resultJsonString)
     }
+
+    @Test
+    fun `13 - Update first column`() {
+        val passedJsonString = """
+            {
+                "name": "testColumnChangedName",
+                "order": 2
+            }
+        """.trimIndent()
+
+        val resultJsonString = """
+            {
+                "name": "testColumnChangedName",
+                "order": 2,
+                "id": 2
+            }
+        """.trimIndent()
+
+        routineTestPut(baseURLFirstColumn, passedJsonString, resultJsonString)
+    }
+
+    @Test
+    fun `14 - Find first column`() {
+        val resultJsonString = """
+            {
+                "name": "testColumnChangedName",
+                "order": 2,
+                "id": 2
+            }
+        """.trimIndent()
+
+        routineTestGetOne(baseURLFirstColumn, resultJsonString)
+    }
+
+    @Test
+    fun `15 - Get list of columns, with one column`() {
+        val resultJsonString = """
+            [{
+                "name": "testColumnChangedName",
+                "order": 2,
+                "id": 2
+            }]
+        """.trimIndent()
+
+        routineTestGetAll(baseURLColumn, resultJsonString)
+    }
+
+    @Test
+    fun `16 - Delete first column`() = routineTestDeleteOne(baseURLFirstColumn)
+
+    @Test
+    fun `21 - Exist task route`() = routineTestGetEmpty(baseURLTask)
+
+    @Test
+    fun `22 - Post one task`() {
+        val passedJsonString = """
+            {
+                "name": "testTask",
+                "description": "testTaskDescription",
+                "priority" : 0
+            }
+        """.trimIndent()
+
+        val resultJsonString = """
+            {
+                "name": "testTask",
+                "description": "testTaskDescription",
+                "priority" : 0,
+                "promotAt": null,
+                "endAt": null,
+                "complexity": null,
+                "id": 3
+            }
+        """.trimIndent()
+
+
+        routineTestPostOne(baseURLTask, passedJsonString, resultJsonString)
+    }
+
+    @Test
+    fun `23 - Update first task`() {
+        val passedJsonString = """
+            {
+                "name": "testTaskChangedName",
+                "description": "testTaskChangedDescription",
+                "priority" : 1
+            }
+        """.trimIndent()
+
+        val resultJsonString = """
+            {
+                "name": "testTaskChangedName",
+                "description": "testTaskChangedDescription",
+                "priority" : 1,
+                "promotAt": null,
+                "endAt": null,
+                "complexity": null,
+                "id": 3
+            }
+        """.trimIndent()
+
+        routineTestPut(baseURLFirstTask, passedJsonString, resultJsonString)
+    }
+
+    @Test
+    fun `24 - Find first task`() {
+        val resultJsonString = """
+            {
+                "name": "testTaskChangedName",
+                "description": "testTaskChangedDescription",
+                "priority" : 1,
+                "id": 3
+            }
+        """.trimIndent()
+
+        routineTestGetOne(baseURLFirstTask, resultJsonString)
+    }
+
+    @Test
+    fun `25 - Get list of tasks, with one task`() {
+        val resultJsonString = """
+            [{
+                "name": "testTaskChangedName",
+                "description": "testTaskChangedDescription",
+                "priority" : 1,
+                "promotAt": null,
+                "endAt": null,
+                "complexity": null,
+                "id": 3
+            }]
+        """.trimIndent()
+
+        routineTestGetAll(baseURLTask, resultJsonString)
+    }
+
+    @Test
+    fun `26 - Delete first task`() = routineTestDeleteOne(baseURLFirstTask)
 
 	//TODO: Тесты маршрутов task/assign  и board/assign 
 	//TODO: Тесты маршрутов task/promot	

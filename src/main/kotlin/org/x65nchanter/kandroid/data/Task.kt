@@ -11,7 +11,7 @@ import javax.persistence.Temporal
 import javax.persistence.TemporalType
 
 @Entity
-data class Board(
+data class Task(
         @JsonProperty(required = true)
         @Column(length = 256, nullable = false)
         val name: String,
@@ -20,30 +20,28 @@ data class Board(
         @Column(length = 2048, nullable = false)
         val description: String,
 
-//        Временной интервал на выполнеие проекта
+//        Метка времени вхождения в текущую фазу и ожидаемая дата  оканчания задачи
         @JsonProperty
         @Temporal(TemporalType.TIMESTAMP)
-        val startAt: Date?,
+        val promotAt: Date?,
         @JsonProperty
         @Temporal(TemporalType.TIMESTAMP)
         val endAt: Date?,
 
-//        Статус новых досок по умалчанию Планируется
         @JsonProperty
-        @Column(nullable = false)
-        val status: Short = BoardStatus.PLANING.statusCode,
+        @Column(name = "kTaskPriority", nullable = false)
+        val priority: Short = 0,
+
+        @JsonProperty
+        @Column(name = "kTaskComplexity")
+        val complexity: Int?,
 
         @Id
         @JsonProperty
         @GeneratedValue(strategy = GenerationType.AUTO)
         val id: Long = 0L
 ) {
-    enum class BoardStatus(val statusCode: Short) {
-        PLANING(0),
-        ACTIVE(1),
-        FINISHED(2)
-    }
 //        Relationships
-//        val columns
-//        val tasks
+//        val column
+//        val worker
 }

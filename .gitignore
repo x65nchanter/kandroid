@@ -9,4 +9,4 @@ build
 scratch
 
 # Vagrant файлы не влеяющие на коробку
-.vagrant
+/.vagrant/
