@@ -1,47 +1,45 @@
 package org.x65nchanter.kandroid.data
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
-import java.util.Date
+import java.time.LocalDateTime
 import javax.persistence.Column
 import javax.persistence.Entity
+import javax.persistence.FetchType
 import javax.persistence.GeneratedValue
 import javax.persistence.GenerationType
 import javax.persistence.Id
-import javax.persistence.Temporal
-import javax.persistence.TemporalType
-
+import javax.persistence.JoinColumn
+import javax.persistence.ManyToOne
+import org.x65nchanter.kandroid.data.Column as KColumn
 @Entity
 data class Task(
         @JsonProperty(required = true)
         @Column(length = 256, nullable = false)
         val name: String,
 
-        @JsonProperty
         @Column(length = 2048, nullable = false)
         val description: String,
 
 //        Метка времени вхождения в текущую фазу и ожидаемая дата  оканчания задачи
-        @JsonProperty
-        @Temporal(TemporalType.TIMESTAMP)
-        val promotAt: Date?,
-        @JsonProperty
-        @Temporal(TemporalType.TIMESTAMP)
-        val endAt: Date?,
+        val promotAt: LocalDateTime?,
+        val endAt: LocalDateTime?,
 
-        @JsonProperty
         @Column(name = "kTaskPriority", nullable = false)
         val priority: Short = 0,
 
-        @JsonProperty
         @Column(name = "kTaskComplexity")
         val complexity: Int?,
 
+        @JsonIgnore
+        @ManyToOne(fetch = FetchType.EAGER)
+        @JoinColumn(name = "columnId")
+        val column: KColumn? = null,
+
         @Id
-        @JsonProperty
         @GeneratedValue(strategy = GenerationType.AUTO)
         val id: Long = 0L
 ) {
 //        Relationships
-//        val column
-//        val worker
+//        TODO:val worker ...?
 }

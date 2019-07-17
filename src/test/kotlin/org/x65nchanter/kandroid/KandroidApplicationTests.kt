@@ -11,8 +11,6 @@ import org.springframework.http.MediaType
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.RequestBuilder
-import org.springframework.test.web.servlet.ResultActions
-import org.springframework.test.web.servlet.ResultMatcher
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
@@ -52,57 +50,54 @@ class KandroidApplicationTests {
         mockMvc = webAppContextSetup(webAppContext).build()
     }
 
-    private fun makeResponse(request: RequestBuilder, status: ResultMatcher, response: String? = null): ResultActions {
-        val actions = mockMvc.perform(request).andExpect(status)
-        if (response != null) {
-            actions.andExpect(content().json(response))
-        }
-        return actions
-    }
 
-    private fun makeResponseStatusOk(request: RequestBuilder, response: String? = null) =
-            makeResponse(request, status().isOk, response)
+    private fun makeRequestGet(base: String) = get(base).contentType(jsonContentType)
 
-    private fun makeResponseStatusCreated(request: RequestBuilder, response: String? = null) =
-            makeResponse(request, status().isCreated, response)
+    private fun makeRequestDelete(base: String) = delete(base).contentType(jsonContentType)
 
-    private fun makeResponseStatusFound(request: RequestBuilder, response: String? = null) =
-            makeResponse(request, status().isFound, response)
+    private fun makeRequestPost(base: String, content: String) =
+            post(base).contentType(jsonContentType).content(content)
 
-    private fun routineTestGetOne(base: String, resultJsonString: String) {
-        val request = get(base).contentType(jsonContentType)
+    private fun makeRequestPut(base: String, content: String) =
+            put(base).contentType(jsonContentType).content(content)
 
-        val response = makeResponseStatusFound(request, resultJsonString)
-    }
 
-    private fun routineTestGetAll(base: String, result: String) {
-        val request = get(base).contentType(jsonContentType)
+    private fun makeResponse(request: RequestBuilder) = mockMvc.perform(request)
 
-        val response = makeResponseStatusOk(request, result)
-    }
 
-    private fun routineTestGetEmpty(base: String) = routineTestGetAll(base, emptyJsonResponse)
+    private fun makeResponseStatusOk(request: RequestBuilder) =
+            makeResponse(request).andExpect(status().isOk)
 
-    private fun routineTestPostOne(base: String, passedJsonString: String, resultJsonString: String) {
-        val request = post(base).contentType(jsonContentType).content(passedJsonString)
+    private fun makeResponseStatusCreated(request: RequestBuilder) =
+            makeResponse(request).andExpect(status().isCreated)
 
-        val response = makeResponseStatusCreated(request, resultJsonString)
-    }
+    private fun makeResponseStatusFound(request: RequestBuilder) =
+            makeResponse(request).andExpect(status().isFound)
 
-    private fun routineTestPut(base: String, passedJsonString: String, resultJsonString: String) {
-        val request = put(base).contentType(jsonContentType).content(passedJsonString)
 
-        val response = makeResponseStatusOk(request, resultJsonString)
-    }
+    private fun routineTestCreate(base: String, passedJsonString: String, resultJsonString: String) =
+            makeResponseStatusCreated(makeRequestPost(base, passedJsonString))
+                    .andExpect(content().json(resultJsonString))
 
-    private fun routineTestDeleteOne(base: String) {
-        val request = delete(base).contentType(jsonContentType)
+    private fun routineTestRead(base: String, resultJsonString: String) =
+            makeResponseStatusFound(makeRequestGet(base))
+                    .andExpect(content().json(resultJsonString))
 
-        val response = makeResponseStatusOk(request)
-    }
+    private fun routineTestUpdate(base: String, passedJsonString: String, resultJsonString: String) =
+            makeResponseStatusOk(makeRequestPut(base, passedJsonString))
+                    .andExpect(content().json(resultJsonString))
+
+    private fun routineTestDelete(base: String) =
+            makeResponseStatusOk(makeRequestDelete(base))
+
+    private fun routineTestIndex(base: String, resultJsonString: String = emptyJsonResponse) =
+            makeResponseStatusOk(makeRequestGet(base))
+                    .andExpect(content().json(resultJsonString))
 
 	@Test
-    fun `01 - Exist board route`() = routineTestGetEmpty(baseURLBoard)
+    fun `01 - Exist board route`() {
+        routineTestIndex(baseURLBoard)
+    }
 
     @Test
     fun `02 - Post one board`() {
@@ -120,12 +115,13 @@ class KandroidApplicationTests {
                 "startAt": null,
                 "endAt":null,
                 "status":0,
+                "columns":[],
                 "id": 1
             }
         """.trimIndent()
 
 
-        routineTestPostOne(baseURLBoard, passedJsonString, resultJsonString)
+        routineTestCreate(baseURLBoard, passedJsonString, resultJsonString)
     }
 
     @Test
@@ -144,11 +140,12 @@ class KandroidApplicationTests {
                 "startAt": null,
                 "endAt":null,
                 "status":0,
+                "columns":[],
                 "id": 1
             }
         """.trimIndent()
 
-        routineTestPut(baseURLFirstBoard, passedJsonString, resultJsonString)
+        routineTestUpdate(baseURLFirstBoard, passedJsonString, resultJsonString)
     }
 
     @Test
@@ -160,11 +157,12 @@ class KandroidApplicationTests {
                 "startAt": null,
                 "endAt":null,
                 "status":0,
+                "columns":[],
                 "id": 1
             }
         """.trimIndent()
 
-        routineTestGetOne(baseURLFirstBoard, resultJsonString)
+        routineTestRead(baseURLFirstBoard, resultJsonString)
     }
 
     @Test
@@ -176,18 +174,23 @@ class KandroidApplicationTests {
                 "startAt": null,
                 "endAt":null,
                 "status":0,
+                "columns":[],
                 "id": 1
             }]
         """.trimIndent()
 
-        routineTestGetAll(baseURLBoard, resultJsonString)
+        routineTestIndex(baseURLBoard, resultJsonString)
     }
 
     @Test
-    fun `06 - Delete first board`() = routineTestDeleteOne(baseURLFirstBoard)
+    fun `06 - Delete first board`() {
+        routineTestDelete(baseURLFirstBoard)
+    }
 
     @Test
-    fun `11 - Exist column route`() = routineTestGetEmpty(baseURLColumn)
+    fun `11 - Exist column route`() {
+        routineTestIndex(baseURLColumn)
+    }
 
     @Test
     fun `12 - Post one column`() {
@@ -202,12 +205,14 @@ class KandroidApplicationTests {
             {
                 "name": "testColumn",
                 "order": 1,
+                "tasks": [],
+                "overflow": 0,
                 "id": 2
             }
         """.trimIndent()
 
 
-        routineTestPostOne(baseURLColumn, passedJsonString, resultJsonString)
+        routineTestCreate(baseURLColumn, passedJsonString, resultJsonString)
     }
 
     @Test
@@ -223,11 +228,13 @@ class KandroidApplicationTests {
             {
                 "name": "testColumnChangedName",
                 "order": 2,
+                "tasks": [],
+                "overflow": 0,
                 "id": 2
             }
         """.trimIndent()
 
-        routineTestPut(baseURLFirstColumn, passedJsonString, resultJsonString)
+        routineTestUpdate(baseURLFirstColumn, passedJsonString, resultJsonString)
     }
 
     @Test
@@ -236,11 +243,13 @@ class KandroidApplicationTests {
             {
                 "name": "testColumnChangedName",
                 "order": 2,
+                "tasks": [],
+                "overflow": 0,
                 "id": 2
             }
         """.trimIndent()
 
-        routineTestGetOne(baseURLFirstColumn, resultJsonString)
+        routineTestRead(baseURLFirstColumn, resultJsonString)
     }
 
     @Test
@@ -249,18 +258,24 @@ class KandroidApplicationTests {
             [{
                 "name": "testColumnChangedName",
                 "order": 2,
+                "tasks": [],
+                "overflow": 0,
                 "id": 2
             }]
         """.trimIndent()
 
-        routineTestGetAll(baseURLColumn, resultJsonString)
+        routineTestIndex(baseURLColumn, resultJsonString)
     }
 
     @Test
-    fun `16 - Delete first column`() = routineTestDeleteOne(baseURLFirstColumn)
+    fun `16 - Delete first column`() {
+        routineTestDelete(baseURLFirstColumn)
+    }
 
     @Test
-    fun `21 - Exist task route`() = routineTestGetEmpty(baseURLTask)
+    fun `21 - Exist task route`() {
+        routineTestIndex(baseURLTask)
+    }
 
     @Test
     fun `22 - Post one task`() {
@@ -285,7 +300,7 @@ class KandroidApplicationTests {
         """.trimIndent()
 
 
-        routineTestPostOne(baseURLTask, passedJsonString, resultJsonString)
+        routineTestCreate(baseURLTask, passedJsonString, resultJsonString)
     }
 
     @Test
@@ -310,7 +325,7 @@ class KandroidApplicationTests {
             }
         """.trimIndent()
 
-        routineTestPut(baseURLFirstTask, passedJsonString, resultJsonString)
+        routineTestUpdate(baseURLFirstTask, passedJsonString, resultJsonString)
     }
 
     @Test
@@ -324,7 +339,7 @@ class KandroidApplicationTests {
             }
         """.trimIndent()
 
-        routineTestGetOne(baseURLFirstTask, resultJsonString)
+        routineTestRead(baseURLFirstTask, resultJsonString)
     }
 
     @Test
@@ -341,11 +356,13 @@ class KandroidApplicationTests {
             }]
         """.trimIndent()
 
-        routineTestGetAll(baseURLTask, resultJsonString)
+        routineTestIndex(baseURLTask, resultJsonString)
     }
 
     @Test
-    fun `26 - Delete first task`() = routineTestDeleteOne(baseURLFirstTask)
+    fun `26 - Delete first task`() {
+        routineTestDelete(baseURLFirstTask)
+    }
 
 	//TODO: Тесты маршрутов task/assign  и board/assign 
 	//TODO: Тесты маршрутов task/promot	

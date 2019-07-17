@@ -1,14 +1,14 @@
 package org.x65nchanter.kandroid.data
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import java.util.Date
+import java.time.LocalDateTime
 import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.GeneratedValue
 import javax.persistence.GenerationType
 import javax.persistence.Id
-import javax.persistence.Temporal
-import javax.persistence.TemporalType
+import javax.persistence.OneToMany
+import org.x65nchanter.kandroid.data.Column as KColumn
 
 @Entity
 data class Board(
@@ -16,25 +16,20 @@ data class Board(
         @Column(length = 256, nullable = false)
         val name: String,
 
-        @JsonProperty
         @Column(length = 2048, nullable = false)
         val description: String,
 
 //        Временной интервал на выполнеие проекта
-        @JsonProperty
-        @Temporal(TemporalType.TIMESTAMP)
-        val startAt: Date?,
-        @JsonProperty
-        @Temporal(TemporalType.TIMESTAMP)
-        val endAt: Date?,
+        val startAt: LocalDateTime?,
+        val endAt: LocalDateTime?,
 
 //        Статус новых досок по умалчанию Планируется
-        @JsonProperty
-        @Column(nullable = false)
         val status: Short = BoardStatus.PLANING.statusCode,
 
+        @OneToMany(mappedBy = "board")
+        val columns: Collection<KColumn> = emptyList(),
+
         @Id
-        @JsonProperty
         @GeneratedValue(strategy = GenerationType.AUTO)
         val id: Long = 0L
 ) {
@@ -43,7 +38,4 @@ data class Board(
         ACTIVE(1),
         FINISHED(2)
     }
-//        Relationships
-//        val columns
-//        val tasks
 }

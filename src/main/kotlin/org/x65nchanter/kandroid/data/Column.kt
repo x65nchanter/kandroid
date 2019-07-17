@@ -1,10 +1,15 @@
 package org.x65nchanter.kandroid.data
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
 import javax.persistence.Entity
+import javax.persistence.FetchType
 import javax.persistence.GeneratedValue
 import javax.persistence.GenerationType
 import javax.persistence.Id
+import javax.persistence.JoinColumn
+import javax.persistence.ManyToOne
+import javax.persistence.OneToMany
 import javax.persistence.Column as AColumn
 
 @Entity(name = "KColumn")
@@ -18,8 +23,15 @@ data class Column(
         @AColumn(name = "kColumnOrder", nullable = false)
         val order: Short,
 
+        @JsonIgnore
+        @ManyToOne(fetch = FetchType.EAGER)
+        @JoinColumn(name = "boardId")
+        val board: Board? = null,
+
+        @OneToMany(mappedBy = "column")
+        val tasks: Collection<Task> = emptyList(),
+
         @Id
-        @JsonProperty
         @GeneratedValue(strategy = GenerationType.AUTO)
         val id: Long = 0L
 ) {
@@ -27,5 +39,6 @@ data class Column(
 //        val tasks
 
 //        Calc props
-//        val overflow
+@Transient
+val overflow = tasks.size
 }
