@@ -4,7 +4,7 @@
 
 ## Инструктаж
 
-Полная документация по RESTful API находится в папке [build/generated-snippets]("build/generated-snippets/")
+Полная документация по RESTful API находится в папке [build/generated-snippets](build/generated-snippets/)
 
 ## Нерешенные задачи
 
