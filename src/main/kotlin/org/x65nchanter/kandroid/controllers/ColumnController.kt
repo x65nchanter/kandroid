@@ -12,30 +12,40 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
-import org.x65nchanter.kandroid.data.Column
 import org.x65nchanter.kandroid.services.ColumnService
+import java.util.UUID
 
 @RestController
 @RequestMapping("column")
 class ColumnController(val columnService: ColumnService) {
-    //TODO: Логирование
-    val logger: Logger = LoggerFactory.getLogger(ColumnController::class.java)
+    //TODO:
+    val logger: Logger? = LoggerFactory.getLogger(ColumnController::class.java)
 
 
     @GetMapping
-    fun index() = columnService.getAll()
+    fun index() =
+            columnService.index()
+                    .also { logger?.info("Return column index list") }
 
-    @PostMapping
+    @PostMapping("board/{boardId}")
     @ResponseStatus(HttpStatus.CREATED)
-    fun create(@RequestBody column: Column) = columnService.add(column)
+    fun create(@RequestBody column: ColumnService.InputColumn, @PathVariable boardId: UUID) =
+            columnService.create(column, boardId)
+                    .also { logger?.info("Created column: $it") }
 
     @GetMapping("{id}")
     @ResponseStatus(HttpStatus.FOUND)
-    fun read(@PathVariable id: Long) = columnService.get(id)
+    fun read(@PathVariable id: UUID) =
+            columnService.read(id)
+                    .also { logger?.info("Found column: $it") }
 
     @PutMapping("{id}")
-    fun update(@PathVariable id: Long, @RequestBody column: Column) = columnService.edit(id, column)
+    fun update(@PathVariable id: UUID, @RequestBody column: ColumnService.InputColumn) =
+            columnService.update(id, column)
+                    .also { logger?.info("Updated column from: $column to: $it ") }
 
     @DeleteMapping("{id}")
-    fun delete(@PathVariable id: Long) = columnService.remove(id)
+    fun delete(@PathVariable id: UUID) =
+            columnService.delete(id)
+                    .also { logger?.info("Deleted column id: $id") }
 }

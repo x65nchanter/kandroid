@@ -1,9 +1,11 @@
 package org.x65nchanter.kandroid.data
 
-import com.fasterxml.jackson.annotation.JsonProperty
+import org.springframework.data.repository.CrudRepository
 import java.time.LocalDateTime
+import java.util.UUID
 import javax.persistence.Column
 import javax.persistence.Entity
+import javax.persistence.FetchType
 import javax.persistence.GeneratedValue
 import javax.persistence.GenerationType
 import javax.persistence.Id
@@ -11,31 +13,32 @@ import javax.persistence.OneToMany
 import org.x65nchanter.kandroid.data.Column as KColumn
 
 @Entity
-data class Board(
-        @JsonProperty(required = true)
-        @Column(length = 256, nullable = false)
-        val name: String,
+class Board(
+        @Column(length = 256)
+        var name: String,
 
-        @Column(length = 2048, nullable = false)
-        val description: String,
+        @Column(length = 2048)
+        var description: String,
 
-//        Временной интервал на выполнеие проекта
-        val startAt: LocalDateTime?,
-        val endAt: LocalDateTime?,
+        var startAt: LocalDateTime? = null,
+        var endAt: LocalDateTime? = null,
 
-//        Статус новых досок по умалчанию Планируется
-        val status: Short = BoardStatus.PLANING.statusCode,
+        @Column(columnDefinition = "smallint")
+        var status: BoardStatus = BoardStatus.PLANING,
 
-        @OneToMany(mappedBy = "board")
-        val columns: Collection<KColumn> = emptyList(),
+        @OneToMany(fetch = FetchType.EAGER, mappedBy = "board")
+        var columns: Collection<KColumn> = emptyList(),
 
         @Id
         @GeneratedValue(strategy = GenerationType.AUTO)
-        val id: Long = 0L
+        var id: UUID = UUID.randomUUID()
 ) {
-    enum class BoardStatus(val statusCode: Short) {
-        PLANING(0),
-        ACTIVE(1),
-        FINISHED(2)
+    enum class BoardStatus {
+        PLANING,
+        ACTIVE,
+        FINISHED
     }
+
 }
+
+interface BoardRepository : CrudRepository<Board, UUID>
